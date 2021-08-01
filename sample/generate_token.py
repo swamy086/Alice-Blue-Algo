@@ -1,4 +1,5 @@
 import os
+import time
 from alice_blue import *
 from datetime import date
 
@@ -48,18 +49,40 @@ if __name__== '__main__':
 
     alice_instance = AliceBlue(username='193734',
                                password='AUG@micro123',
-                               access_token=token_value)
+                               access_token=token_value,
+                               master_contracts_to_download=['NSE'])
     
     print(alice_instance)
-    print(alice_instance.get_balance())
-   
+    #print(alice_instance.get_profile())
 
 
+    # get instrunment by symbol
+    tata_motors_nse_eq = alice_instance.get_instrument_by_symbol('NSE', 'TATAMOTORS')
 
 
+    socket_opened = False
+    def event_handler_quote_update(message):
+        stock_data = message
+        print(stock_data['ltp'])
+        
+    def open_callback():
+        global socket_opened
+        socket_opened = True
 
+    alice_instance.start_websocket(subscribe_callback=event_handler_quote_update,
+                      socket_open_callback=open_callback,
+                      run_in_background=True)
 
+    while(socket_opened==False):
+        pass
+    
+    alice_instance.subscribe(
+        alice_instance.get_instrument_by_symbol('NSE', 'TATAMOTORS'),
+        LiveFeedType.MARKET_DATA)
+    time.sleep(10)
 
-
-
-   
+    value = 10
+    while(value < 100):
+        print("wowwwwww")
+        time.sleep(1)
+        value = value +1
